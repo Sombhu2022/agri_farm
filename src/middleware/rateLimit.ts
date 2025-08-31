@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { RateLimitError } from '@/utils/errors';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { redisClient } from '@/config/redis';
 import type {
   RateLimitOptions,

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { aiService } from '@/services/aiService';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { successResponse, errorResponse } from '@/utils/response';
 
 /**

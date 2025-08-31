@@ -1,7 +1,7 @@
 import twilio, { Twilio } from 'twilio';
 import AWS from 'aws-sdk';
 import { parsePhoneNumber, PhoneNumber } from 'libphonenumber-js';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import {
   SmsServiceConfig,
   SmsOptions,

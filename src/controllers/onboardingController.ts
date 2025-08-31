@@ -5,7 +5,7 @@ import { OnboardingProgress } from '@/models/OnboardingProgress';
 import { OnboardingTutorial } from '@/models/OnboardingTutorial';
 import { User } from '@/models/User';
 import { UserPreferences } from '@/models/UserPreferences';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import {
   NotFoundError,
   ValidationError,

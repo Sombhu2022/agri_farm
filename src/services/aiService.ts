@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import * as tf from '@tensorflow/tfjs-node';
 import sharp from 'sharp';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { AIServiceError } from '@/utils/errors';
 import type {
   DiagnosisResult

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { Language } from '@/models/Language';
 import { Translation } from '@/models/Translation';
 import { User } from '@/models/User';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import {
   NotFoundError,
   ValidationError,

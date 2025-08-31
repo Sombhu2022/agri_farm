@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { Crop } from '@/models/Crop';
 import { Disease } from '@/models/Disease';
 import { Treatment } from '@/models/Treatment';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import {
   NotFoundError,
   ValidationError,

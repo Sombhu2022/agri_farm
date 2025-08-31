@@ -1,4 +1,4 @@
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { PhoneVerificationError } from '@/utils/errors';
 import { redisClient } from '@/config/redis';
 import { smsService } from './smsService';

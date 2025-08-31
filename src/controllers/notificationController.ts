@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { Notification } from '@/models/Notification';
 import { User } from '@/models/User';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import {
   NotFoundError,
   ValidationError,

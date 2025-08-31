@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { AuthConfig, JwtPayload, TokenPair } from '@/types/auth.types';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 
 export const authConfig: AuthConfig = {
   jwt: {

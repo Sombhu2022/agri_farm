@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { connectDatabase } from '@/config/database';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { 
   User, 
   Language, 

@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { MarketPrice } from '@/models/MarketPrice';
 import { Crop } from '@/models/Crop';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import axios from 'axios';
 import {
   NotFoundError,

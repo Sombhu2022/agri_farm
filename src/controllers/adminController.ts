@@ -9,7 +9,7 @@ import { SystemLog } from '@/models/SystemLog';
 import { AuditLog } from '@/models/AuditLog';
 import { SystemSettings } from '@/models/SystemSettings';
 import { Notification } from '@/models/Notification';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { NotificationService } from '@/services/NotificationService';
 import {
   NotFoundError,

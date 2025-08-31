@@ -4,7 +4,7 @@ import { Expert } from '@/models/Expert';
 import { User } from '@/models/User';
 import { Diagnosis } from '@/models/Diagnosis';
 import { CommunityPost } from '@/models/CommunityPost';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import {
   NotFoundError,
   ValidationError,

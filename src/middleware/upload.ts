@@ -4,7 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import sharp from 'sharp';
 import { v2 as cloudinary } from 'cloudinary';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { FileUploadError } from '@/utils/errors';
 import type {
   UploadOptions,

@@ -7,7 +7,7 @@ import {
   createErrorContext,
   ERROR_MESSAGES 
 } from '@/utils/errors';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { AuthTokenPayload, UserRole } from '@/types';
 
 interface AuthenticatedRequest extends Request {

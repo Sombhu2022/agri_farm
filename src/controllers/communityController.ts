@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { CommunityPost } from '@/models/CommunityPost';
 import { User } from '@/models/User';
 import { ImageService } from '@/services/imageService';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import {
   NotFoundError,
   ValidationError,

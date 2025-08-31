@@ -1,5 +1,5 @@
 import twilio from 'twilio';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 
 export interface SMSConfig {
   service: 'twilio' | 'aws_sns' | 'firebase';

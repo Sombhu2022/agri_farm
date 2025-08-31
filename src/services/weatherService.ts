@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { WeatherServiceError } from '@/utils/errors';
 import { redisClient } from '@/config/redis';
 import type {

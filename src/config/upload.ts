@@ -2,7 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import sharp from 'sharp';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 
 export interface UploadConfig {
   storage: 'local' | 'cloudinary' | 's3';

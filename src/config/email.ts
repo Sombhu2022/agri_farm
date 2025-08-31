@@ -1,5 +1,5 @@
 import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 
 export interface EmailConfig {
   service: 'smtp' | 'sendgrid' | 'mailgun' | 'ses';

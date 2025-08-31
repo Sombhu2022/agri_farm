@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { smsService } from './smsService';
 import { emailService } from './emailService';
 import { OTPAttempt } from '@/models/OTPAttempt';

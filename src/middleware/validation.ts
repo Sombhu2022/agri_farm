@@ -3,7 +3,7 @@ import Joi from 'joi';
 import { z } from 'zod';
 import validator from 'validator';
 import { ValidationError } from '@/utils/errors';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import type {
   ValidatorSchema,
   ValidationOptions,

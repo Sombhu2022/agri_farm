@@ -1,6 +1,6 @@
 import { CorsOptions } from 'cors';
 import { RateLimiterOptions } from 'express-rate-limit';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 
 export interface ServerConfig {
   port: number;

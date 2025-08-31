@@ -7,8 +7,8 @@ import {
   getMLUsageStats,
   diagnoseWithProvider
 } from '@/controllers/mlController';
-import { auth, adminOnly } from '@/middleware/auth';
-import { upload } from '@/middleware/upload';
+import { authenticate, authorize } from '@/middleware/auth';
+import { uploadMiddleware } from '@/middleware/upload';
 import { validateRequest } from '@/middleware/validation';
 import { body, param } from 'express-validator';
 
@@ -46,7 +46,7 @@ const router = Router();
  *                     ensembleEnabled:
  *                       type: boolean
  */
-router.get('/info', auth, getMLServiceInfo);
+router.get('/info', authenticate, getMLServiceInfo);
 
 /**
  * @swagger
@@ -85,7 +85,7 @@ router.get('/info', auth, getMLServiceInfo);
  *                       items:
  *                         type: object
  */
-router.get('/health', auth, checkMLProvidersHealth);
+router.get('/health', authenticate, checkMLProvidersHealth);
 
 /**
  * @swagger
@@ -132,10 +132,10 @@ router.get('/health', auth, checkMLProvidersHealth);
  *                   type: object
  */
 router.post('/test/:provider',
-  auth,
+  authenticate,
   param('provider').isIn(['plant_id', 'plantnet', 'tensorflow', 'google_vision', 'huggingface']),
   validateRequest,
-  upload.array('images', 3),
+  uploadMiddleware.array('images', 3),
   testMLService
 );
 
@@ -196,10 +196,10 @@ router.post('/test/:provider',
  *                       type: object
  */
 router.post('/diagnose/:provider',
-  auth,
+  authenticate,
   param('provider').isIn(['plant_id', 'plantnet', 'tensorflow', 'google_vision', 'huggingface', 'ensemble']),
   validateRequest,
-  upload.array('images', 5),
+  uploadMiddleware.array('images', 5),
   diagnoseWithProvider
 );
 
@@ -242,8 +242,8 @@ router.post('/diagnose/:provider',
  *                       type: number
  */
 router.patch('/confidence',
-  auth,
-  adminOnly,
+  authenticate,
+  authorize('admin'),
   body('threshold').isFloat({ min: 0, max: 1 }).withMessage('Threshold must be between 0 and 1'),
   validateRequest,
   updateConfidenceThreshold
@@ -285,6 +285,6 @@ router.patch('/confidence',
  *                     confidenceDistribution:
  *                       type: object
  */
-router.get('/stats', auth, adminOnly, getMLUsageStats);
+router.get('/stats', authenticate, authorize('admin'), getMLUsageStats);
 
 export default router;

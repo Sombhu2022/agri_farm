@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { emailService } from './emailService';
 import { smsService } from './smsService';
 import { Notification } from '@/models/Notification';

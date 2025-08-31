@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { Weather } from '@/models/Weather';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import axios from 'axios';
 import {
   NotFoundError,

@@ -7,7 +7,7 @@ import {
   ThumbnailOptions,
   WatermarkOptions 
 } from './imageService.types';
-import { logger } from '@/utils/logger';
+import logger from '@/utils/logger';
 import { FileUploadError, ExternalServiceError } from '@/utils/errors';
 
 export class ImageService {
