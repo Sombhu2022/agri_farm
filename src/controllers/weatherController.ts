@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { Weather } from '@/models/Weather';
+import { env } from '@/config/env';
 import logger from '@/utils/logger';
 import axios from 'axios';
 import {
@@ -39,8 +40,8 @@ import {
 } from './weatherController.types';
 
 // Weather API configuration
-const WEATHER_API_KEY = process.env.WEATHER_API_KEY || '';
-const WEATHER_API_URL = process.env.WEATHER_API_URL || 'https://api.openweathermap.org/data/2.5';
+const WEATHER_API_KEY = env.WEATHER_API_KEY;
+const WEATHER_API_URL = env.WEATHER_API_URL;
 
 export class WeatherController {
   public getCurrentWeather: GetCurrentWeatherController = async (req, res, next) => {

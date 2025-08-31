@@ -1,6 +1,7 @@
 import { CorsOptions } from 'cors';
 import { RateLimiterOptions } from 'express-rate-limit';
 import logger from '@/utils/logger';
+import { env, environment } from './env';
 
 export interface ServerConfig {
   port: number;
@@ -57,22 +58,20 @@ export interface ServerConfig {
   };
 }
 
-const isProduction = process.env.NODE_ENV === 'production';
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isTest = process.env.NODE_ENV === 'test';
+const { isProduction, isDevelopment, isTest } = environment;
 
 export const serverConfig: ServerConfig = {
-  port: parseInt(process.env.PORT || '3000', 10),
-  host: process.env.HOST || '0.0.0.0',
-  nodeEnv: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
-  apiVersion: process.env.API_VERSION || 'v1',
+  port: env.PORT,
+  host: env.HOST,
+  nodeEnv: env.NODE_ENV as 'development' | 'production' | 'test',
+  apiVersion: env.API_VERSION,
   
   cors: {
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or Postman)
       if (!origin) return callback(null, true);
       
-      const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [
+      const allowedOrigins = env.CORS_ORIGIN?.split(',') || [
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:5173', // Vite dev server
@@ -106,8 +105,8 @@ export const serverConfig: ServerConfig = {
   },
   
   rateLimit: {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
+    windowMs: env.RATE_LIMIT_WINDOW_MS, // 15 minutes
+    max: env.RATE_LIMIT_MAX_REQUESTS,
     message: {
       error: 'Too many requests',
       message: 'You have made too many requests. Please try again later.',
@@ -147,37 +146,37 @@ export const serverConfig: ServerConfig = {
       xssFilter: true,
     },
     session: {
-      secret: process.env.SESSION_SECRET || 'fallback-session-secret-change-in-production',
+      secret: env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
       cookie: {
         secure: isProduction,
         httpOnly: true,
-        maxAge: parseInt(process.env.SESSION_MAX_AGE || '86400000', 10), // 24 hours
+        maxAge: env.SESSION_MAX_AGE,
         sameSite: isProduction ? 'strict' : 'lax',
       },
     },
   },
   
   monitoring: {
-    enableHealthChecks: process.env.ENABLE_HEALTH_CHECKS !== 'false',
-    healthCheckPath: process.env.HEALTH_CHECK_PATH || '/health',
-    enableMetrics: process.env.ENABLE_METRICS === 'true',
-    metricsPath: process.env.METRICS_PATH || '/metrics',
-    requestLogging: process.env.REQUEST_LOGGING !== 'false',
+    enableHealthChecks: env.ENABLE_HEALTH_CHECKS,
+    healthCheckPath: env.HEALTH_CHECK_PATH,
+    enableMetrics: env.ENABLE_METRICS,
+    metricsPath: env.METRICS_PATH,
+    requestLogging: env.REQUEST_LOGGING,
   },
   
   swagger: {
-    enabled: process.env.SWAGGER_ENABLED === 'true' || isDevelopment,
-    path: process.env.SWAGGER_PATH || '/api-docs',
-    title: process.env.SWAGGER_TITLE || 'Plantix API',
-    version: process.env.SWAGGER_VERSION || '1.0.0',
-    description: process.env.SWAGGER_DESCRIPTION || 'Agricultural crop disease diagnosis platform API',
+    enabled: env.SWAGGER_ENABLED,
+    path: env.SWAGGER_PATH,
+    title: env.SWAGGER_TITLE,
+    version: env.SWAGGER_VERSION,
+    description: env.SWAGGER_DESCRIPTION,
   },
   
   gracefulShutdown: {
     enabled: true,
-    timeout: parseInt(process.env.GRACEFUL_SHUTDOWN_TIMEOUT || '10000', 10), // 10 seconds
+    timeout: env.GRACEFUL_SHUTDOWN_TIMEOUT,
   },
 };
 
@@ -270,23 +269,23 @@ export const HTTP_STATUS = {
 
 // Request timeout configurations
 export const TIMEOUTS = {
-  REQUEST: parseInt(process.env.REQUEST_TIMEOUT || '30000', 10), // 30 seconds
-  DATABASE_QUERY: parseInt(process.env.DB_QUERY_TIMEOUT || '10000', 10), // 10 seconds
-  EXTERNAL_API: parseInt(process.env.EXTERNAL_API_TIMEOUT || '15000', 10), // 15 seconds
-  FILE_UPLOAD: parseInt(process.env.FILE_UPLOAD_TIMEOUT || '60000', 10), // 1 minute
-  AI_PROCESSING: parseInt(process.env.AI_PROCESSING_TIMEOUT || '120000', 10), // 2 minutes
+  REQUEST: env.REQUEST_TIMEOUT,
+  DATABASE_QUERY: env.DB_QUERY_TIMEOUT,
+  EXTERNAL_API: env.EXTERNAL_API_TIMEOUT,
+  FILE_UPLOAD: env.FILE_UPLOAD_TIMEOUT,
+  AI_PROCESSING: env.AI_PROCESSING_TIMEOUT,
 } as const;
 
 // Feature flags
 export const FEATURE_FLAGS = {
-  ENABLE_CACHING: process.env.ENABLE_CACHING !== 'false',
-  ENABLE_BACKGROUND_JOBS: process.env.ENABLE_BACKGROUND_JOBS !== 'false',
-  ENABLE_WEBSOCKETS: process.env.ENABLE_WEBSOCKETS !== 'false',
-  ENABLE_NOTIFICATIONS: process.env.ENABLE_NOTIFICATIONS !== 'false',
-  ENABLE_ANALYTICS: process.env.ENABLE_ANALYTICS === 'true',
-  ENABLE_RATE_LIMITING: process.env.ENABLE_RATE_LIMITING !== 'false',
-  ENABLE_REQUEST_ID: process.env.ENABLE_REQUEST_ID !== 'false',
-  ENABLE_COMPRESSION: process.env.ENABLE_COMPRESSION !== 'false',
+  ENABLE_CACHING: env.ENABLE_CACHING,
+  ENABLE_BACKGROUND_JOBS: env.ENABLE_BACKGROUND_JOBS,
+  ENABLE_WEBSOCKETS: env.ENABLE_WEBSOCKETS,
+  ENABLE_NOTIFICATIONS: env.ENABLE_NOTIFICATIONS,
+  ENABLE_ANALYTICS: env.ENABLE_ANALYTICS,
+  ENABLE_RATE_LIMITING: env.ENABLE_RATE_LIMITING,
+  ENABLE_REQUEST_ID: env.ENABLE_REQUEST_ID,
+  ENABLE_COMPRESSION: env.ENABLE_COMPRESSION,
 } as const;
 
 // Validation configurations
@@ -340,29 +339,29 @@ export const UPLOAD_CONFIG = {
 
 // Logging configuration
 export const LOGGING_CONFIG = {
-  LEVEL: process.env.LOG_LEVEL || environmentConfig[serverConfig.nodeEnv].logLevel,
-  FILE_PATH: process.env.LOG_FILE_PATH || './logs/app.log',
-  ERROR_FILE_PATH: process.env.ERROR_LOG_FILE_PATH || './logs/error.log',
-  MAX_FILES: parseInt(process.env.LOG_MAX_FILES || '5', 10),
-  MAX_SIZE: process.env.LOG_MAX_SIZE || '10m',
-  ENABLE_CONSOLE: process.env.ENABLE_CONSOLE_LOGGING !== 'false',
-  ENABLE_FILE: process.env.ENABLE_FILE_LOGGING === 'true',
+  LEVEL: env.LOG_LEVEL,
+  FILE_PATH: env.LOG_FILE_PATH,
+  ERROR_FILE_PATH: env.ERROR_LOG_FILE_PATH,
+  MAX_FILES: env.LOG_MAX_FILES,
+  MAX_SIZE: env.LOG_MAX_SIZE,
+  ENABLE_CONSOLE: env.ENABLE_CONSOLE_LOGGING,
+  ENABLE_FILE: env.ENABLE_FILE_LOGGING,
 } as const;
 
 // External service configurations
 export const EXTERNAL_SERVICES = {
   WEATHER_API: {
-    BASE_URL: process.env.WEATHER_API_URL || 'https://api.openweathermap.org/data/2.5',
-    API_KEY: process.env.WEATHER_API_KEY || '',
+    BASE_URL: env.WEATHER_API_URL,
+    API_KEY: env.WEATHER_API_KEY,
     TIMEOUT: TIMEOUTS.EXTERNAL_API,
   },
   ML_API: {
-    BASE_URL: process.env.ML_API_URL || 'http://localhost:5000',
-    API_KEY: process.env.ML_API_KEY || '',
+    BASE_URL: env.ML_API_URL,
+    API_KEY: env.ML_API_KEY,
     TIMEOUT: TIMEOUTS.AI_PROCESSING,
   },
   MAPS_API: {
-    API_KEY: process.env.GOOGLE_MAPS_API_KEY || '',
+    API_KEY: env.GOOGLE_MAPS_API_KEY,
   },
 } as const;
 
@@ -373,26 +372,26 @@ export class ConfigValidator {
 
     // Check required environment variables
     if (isProduction) {
-      const requiredVars = [
-        'JWT_SECRET',
-        'JWT_REFRESH_SECRET',
-        'MONGODB_URI',
-        'SESSION_SECRET',
+      const requiredConfigs = [
+        { key: 'JWT_SECRET', value: env.JWT_SECRET },
+        { key: 'JWT_REFRESH_SECRET', value: env.JWT_REFRESH_SECRET },
+        { key: 'MONGODB_URI', value: env.MONGODB_URI },
+        { key: 'SESSION_SECRET', value: env.SESSION_SECRET },
       ];
 
-      for (const envVar of requiredVars) {
-        if (!process.env[envVar]) {
-          errors.push(`Missing required environment variable: ${envVar}`);
+      for (const config of requiredConfigs) {
+        if (!config.value || config.value.includes('fallback')) {
+          errors.push(`Missing required environment variable: ${config.key}`);
         }
       }
 
       // Check JWT secrets are different
-      if (process.env.JWT_SECRET === process.env.JWT_REFRESH_SECRET) {
+      if (env.JWT_SECRET === env.JWT_REFRESH_SECRET) {
         errors.push('JWT_SECRET and JWT_REFRESH_SECRET must be different');
       }
 
       // Check secret lengths
-      if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
+      if (env.JWT_SECRET && env.JWT_SECRET.length < 32) {
         errors.push('JWT_SECRET must be at least 32 characters long');
       }
     }

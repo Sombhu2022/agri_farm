@@ -6,6 +6,7 @@ import passport from 'passport';
 import { config } from 'dotenv';
 import { connectDatabase } from '@/config/database';
 import { initializeCloudinary } from '@/config/cloudinary';
+import { env } from '@/config/env';
 import logger, { loggerUtils } from '@/utils/logger';
 import LoggingMiddleware from '@/middleware/logging';
 import { BaseError, InternalServerError } from '@/utils/errors';
@@ -33,8 +34,8 @@ class App {
 
   constructor() {
     this.app = express();
-    this.port = parseInt(process.env.PORT || '3000', 10);
-    this.isDevelopment = process.env.NODE_ENV === 'development';
+    this.port = env.PORT;
+    this.isDevelopment = env.NODE_ENV === 'development';
 
     this.initializeMiddlewares();
     this.initializeRoutes();
@@ -60,7 +61,7 @@ class App {
     // CORS configuration
     const corsOptions: cors.CorsOptions = {
       origin: (origin, callback) => {
-        const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'];
+        const allowedOrigins = env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'];
         
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
@@ -80,8 +81,8 @@ class App {
 
     // Rate limiting
     const limiter = rateLimit({
-      windowMs: parseInt(process.env.RATE_LIMIT_WINDOW || '15', 10) * 60 * 1000, // 15 minutes
-      max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10), // limit each IP to 100 requests per windowMs
+      windowMs: env.RATE_LIMIT_WINDOW_MS, // 15 minutes
+      max: env.RATE_LIMIT_MAX_REQUESTS, // limit each IP to 100 requests per windowMs
       message: {
         success: false,
         message: 'Too many requests from this IP, please try again later.',
@@ -109,7 +110,7 @@ class App {
 
     // Body parsing middleware
     this.app.use(express.json({ 
-      limit: process.env.JSON_LIMIT || '10mb',
+      limit: env.JSON_LIMIT || '10mb',
       verify: (req: Request, res: Response, buf: Buffer) => {
         (req as any).rawBody = buf;
       },
@@ -117,7 +118,7 @@ class App {
     
     this.app.use(express.urlencoded({ 
       extended: true, 
-      limit: process.env.URL_ENCODED_LIMIT || '10mb',
+      limit: env.URL_ENCODED_LIMIT || '10mb',
     }));
 
     // Initialize passport for OAuth
@@ -336,7 +337,7 @@ class App {
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         version: '1.0.0',
-        environment: process.env.NODE_ENV || 'development',
+        environment: env.NODE_ENV,
         responseTime,
         services: {
           database: dbHealth,
@@ -456,7 +457,7 @@ class App {
       this.server = this.app.listen(this.port, () => {
         logger.info(`Server started successfully`, {
           port: this.port,
-          environment: process.env.NODE_ENV || 'development',
+          environment: env.NODE_ENV,
           nodeVersion: process.version,
           pid: process.pid,
         });

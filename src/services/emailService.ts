@@ -1,4 +1,5 @@
 import nodemailer, { Transporter } from 'nodemailer';
+import { env } from '@/config/env';
 import logger from '@/utils/logger';
 import {
   EmailServiceConfig,
@@ -14,10 +15,10 @@ export class EmailService {
 
   constructor() {
     this.config = {
-      service: process.env.EMAIL_SERVICE as string,
-      apiKey: process.env.EMAIL_API_KEY as string,
-      from: process.env.EMAIL_FROM as string,
-      fromName: process.env.EMAIL_FROM_NAME as string,
+      service: env.EMAIL_SERVICE,
+      apiKey: env.EMAIL_API_KEY,
+      from: env.EMAIL_FROM,
+      fromName: env.EMAIL_FROM_NAME,
     };
 
     this.initializeTransporter();
@@ -39,8 +40,8 @@ export class EmailService {
           },
         });
       } else if (this.config.service === 'mailgun') {
-        const username = process.env.MAILGUN_USERNAME as string;
-        const password = process.env.MAILGUN_PASSWORD as string;
+        const username = env.MAILGUN_USERNAME;
+        const password = env.MAILGUN_PASSWORD;
         
         if (!username || !password || username.includes('your_') || password.includes('your_')) {
           console.warn('Mailgun credentials not configured. Email service will not be available.');
@@ -52,9 +53,9 @@ export class EmailService {
           auth: { user: username, pass: password },
         });
       } else if (this.config.service === 'smtp') {
-        const host = process.env.SMTP_HOST as string;
-        const user = process.env.SMTP_USER as string;
-        const pass = process.env.SMTP_PASS as string;
+        const host = env.SMTP_HOST;
+        const user = env.SMTP_USER;
+        const pass = env.SMTP_PASS;
         
         if (!host || !user || !pass || host.includes('your_') || user.includes('your_') || pass.includes('your_')) {
           console.warn('SMTP credentials not configured. Email service will not be available.');
@@ -63,8 +64,8 @@ export class EmailService {
         
         this.transporter = nodemailer.createTransporter({
           host,
-          port: parseInt(process.env.SMTP_PORT || '587', 10),
-          secure: process.env.SMTP_SECURE === 'true',
+          port: env.SMTP_PORT,
+          secure: env.SMTP_SECURE === 'true',
           auth: { user, pass },
         });
       } else {
@@ -76,7 +77,7 @@ export class EmailService {
     } catch (error) {
       console.error('Failed to initialize email service:', error);
       // Don't throw error in development to allow server to start
-      if (process.env.NODE_ENV === 'production') {
+      if (env.NODE_ENV === 'production') {
         throw error;
       }
     }
@@ -180,7 +181,7 @@ export class EmailService {
     userName: string,
     verificationToken: string
   ): Promise<EmailResult> {
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
 
     const template: EmailTemplate = {
       name: 'email_verification',
@@ -201,7 +202,7 @@ export class EmailService {
     userName: string,
     resetToken: string
   ): Promise<EmailResult> {
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
     const template: EmailTemplate = {
       name: 'password_reset',
@@ -224,7 +225,7 @@ export class EmailService {
     diagnosisId: string,
     results: any[]
   ): Promise<EmailResult> {
-    const diagnosisUrl = `${process.env.FRONTEND_URL}/diagnosis/${diagnosisId}`;
+    const diagnosisUrl = `${env.FRONTEND_URL}/diagnosis/${diagnosisId}`;
 
     const template: EmailTemplate = {
       name: 'diagnosis_complete',
@@ -247,7 +248,7 @@ export class EmailService {
     consultationId: string,
     userProblem: string
   ): Promise<EmailResult> {
-    const consultationUrl = `${process.env.FRONTEND_URL}/consultation/${consultationId}`;
+    const consultationUrl = `${env.FRONTEND_URL}/consultation/${consultationId}`;
 
     const template: EmailTemplate = {
       name: 'expert_notification',

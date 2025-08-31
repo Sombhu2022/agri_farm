@@ -1,6 +1,7 @@
 import twilio, { Twilio } from 'twilio';
 import AWS from 'aws-sdk';
 import { parsePhoneNumber, PhoneNumber } from 'libphonenumber-js';
+import { env } from '@/config/env';
 import logger from '@/utils/logger';
 import {
   SmsServiceConfig,
@@ -18,17 +19,17 @@ export class SmsService {
 
   constructor() {
     this.config = {
-      provider: (process.env.SMS_SERVICE as SmsProvider) || 'twilio',
+      provider: env.SMS_SERVICE as SmsProvider,
       twilio: {
-        accountSid: process.env.TWILIO_ACCOUNT_SID as string,
-        authToken: process.env.TWILIO_AUTH_TOKEN as string,
-        phoneNumber: process.env.TWILIO_PHONE_NUMBER as string,
-        verifyServiceSid: process.env.TWILIO_VERIFY_SERVICE_SID as string,
+        accountSid: env.TWILIO_ACCOUNT_SID,
+        authToken: env.TWILIO_AUTH_TOKEN,
+        phoneNumber: env.TWILIO_PHONE_NUMBER,
+        verifyServiceSid: env.TWILIO_VERIFY_SERVICE_SID || '',
       },
       aws: {
-        accessKeyId: process.env.AWS_SNS_ACCESS_KEY as string,
-        secretAccessKey: process.env.AWS_SNS_SECRET_KEY as string,
-        region: process.env.AWS_SNS_REGION as string,
+        accessKeyId: env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+        region: env.AWS_REGION,
       },
     };
 
@@ -79,7 +80,7 @@ export class SmsService {
     } catch (error) {
       console.error('SMS Service initialization error:', error);
       // Don't throw error in development to allow server to start
-      if (process.env.NODE_ENV === 'production') {
+      if (env.NODE_ENV === 'production') {
         throw error;
       }
     }

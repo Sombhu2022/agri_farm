@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '@/models/User';
+import { env } from '@/config/env';
 import { 
   AuthenticationError, 
   AuthorizationError,
@@ -40,7 +41,7 @@ export const authenticate = async (
     }
 
     // Verify JWT token
-    const secret = process.env.JWT_SECRET;
+    const secret = env.JWT_SECRET;
     if (!secret) {
       throw new Error('JWT_SECRET is not defined');
     }
@@ -236,7 +237,7 @@ export const optionalAuthenticate = async (
     }
 
     // Verify JWT token
-    const secret = process.env.JWT_SECRET;
+    const secret = env.JWT_SECRET;
     if (!secret) {
       throw new Error('JWT_SECRET is not defined');
     }

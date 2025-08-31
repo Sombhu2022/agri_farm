@@ -5,6 +5,9 @@ import logger from '@/utils/logger';
 // Load environment variables
 dotenvConfig();
 
+// Import centralized environment variables
+import { env } from './env';
+
 interface DatabaseConfig {
   uri: string;
   testUri: string;
@@ -12,12 +15,12 @@ interface DatabaseConfig {
 }
 
 const config: DatabaseConfig = {
-  uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/agri_farm',
-  testUri: process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/agri_farm_test',
+  uri: env.MONGODB_URI,
+  testUri: env.MONGODB_TEST_URI,
   options: {
-    maxPoolSize: parseInt(process.env.DB_MAX_POOL_SIZE || '10', 10),
-    serverSelectionTimeoutMS: parseInt(process.env.DB_SERVER_SELECTION_TIMEOUT || '5000', 10),
-    socketTimeoutMS: parseInt(process.env.DB_SOCKET_TIMEOUT || '45000', 10),
+    maxPoolSize: env.DB_MAX_POOL_SIZE,
+    serverSelectionTimeoutMS: env.DB_SERVER_SELECTION_TIMEOUT,
+    socketTimeoutMS: env.DB_SOCKET_TIMEOUT,
     family: 4,
     retryWrites: true,
     retryReads: true,
@@ -32,14 +35,14 @@ const config: DatabaseConfig = {
 export const connectDatabase = async (): Promise<typeof mongoose | null> => {
   try {
     // Check if database is optional (for development)
-    if (process.env.DATABASE_OPTIONAL === 'true' && process.env.NODE_ENV === 'development') {
+    if (env.DATABASE_OPTIONAL && env.NODE_ENV === 'development') {
       logger.warn('Database connection is optional in development mode');
       try {
-        const uri = process.env.NODE_ENV === 'test' ? config.testUri : config.uri;
+        const uri = env.NODE_ENV === 'test' ? config.testUri : config.uri;
         
         logger.info('Attempting to connect to MongoDB...', {
           uri: uri.replace(/\/\/.*@/, '//***:***@'), // Hide credentials in logs
-          environment: process.env.NODE_ENV || 'development',
+          environment: env.NODE_ENV,
         });
 
         mongoose.set('strictQuery', true);
@@ -71,11 +74,11 @@ export const connectDatabase = async (): Promise<typeof mongoose | null> => {
       }
     }
 
-    const uri = process.env.NODE_ENV === 'test' ? config.testUri : config.uri;
+    const uri = env.NODE_ENV === 'test' ? config.testUri : config.uri;
     
     logger.info('Attempting to connect to MongoDB...', {
       uri: uri.replace(/\/\/.*@/, '//***:***@'), // Hide credentials in logs
-      environment: process.env.NODE_ENV || 'development',
+      environment: env.NODE_ENV,
     });
 
     mongoose.set('strictQuery', true);
@@ -115,7 +118,7 @@ export const disconnectDatabase = async (): Promise<void> => {
 };
 
 export const clearDatabase = async (): Promise<void> => {
-  if (process.env.NODE_ENV !== 'test') {
+  if (env.NODE_ENV !== 'test') {
     throw new Error('clearDatabase can only be used in test environment');
   }
 

@@ -1,11 +1,5 @@
-import { config as dotenvConfig } from 'dotenv';
-import path from 'path';
-
-// Load environment variables
-const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
-const envPath = path.resolve(process.cwd(), envFile);
-
-dotenvConfig({ path: envPath });
+// Import centralized environment variables
+import { env, environment } from './env';
 
 // Import all configuration modules
 import databaseConfig from './database';
@@ -96,6 +90,10 @@ export interface AppConfig {
   database: {
     uri: string;
     testUri: string;
+    maxPoolSize: number;
+    serverSelectionTimeout: number;
+    socketTimeout: number;
+    optional: boolean;
   };
   redis: {
     host: string;
@@ -107,6 +105,17 @@ export interface AppConfig {
     service: string;
     from: { name: string; address: string };
     templates: Record<string, string>;
+    apiKey?: string;
+    smtp?: {
+      host: string;
+      port: number;
+      user: string;
+      pass: string;
+    };
+    mailgun?: {
+      username: string;
+      password: string;
+    };
   };
   sms: {
     service: string;
@@ -114,6 +123,11 @@ export interface AppConfig {
       perMinute: number;
       perHour: number;
       perDay: number;
+    };
+    twilio?: {
+      accountSid: string;
+      authToken: string;
+      phoneNumber: string;
     };
   };
   upload: {
@@ -123,60 +137,112 @@ export interface AppConfig {
       files: number;
     };
     allowedMimeTypes: string[];
+    cloudinary?: {
+      cloudName: string;
+      apiKey: string;
+      apiSecret: string;
+    };
+    aws?: {
+      accessKeyId: string;
+      secretAccessKey: string;
+      region: string;
+      bucket: string;
+    };
   };
   external: {
     weatherApi: {
       baseUrl: string;
       apiKey: string;
+      providers: {
+        openweather?: { apiKey: string };
+        weatherapi?: { apiKey: string };
+        accuweather?: { apiKey: string };
+      };
+      primaryProvider: string;
+      backupProviders: string[];
+      updateInterval: number;
+      cacheExpiry: number;
     };
     mlApi: {
       baseUrl: string;
       apiKey: string;
     };
+    maps: {
+      apiKey: string;
+    };
+  };
+  logging: {
+    level: string;
+    filePath: string;
+    errorFilePath: string;
+    maxFiles: number;
+    maxSize: string;
+    enableConsole: boolean;
+    enableFile: boolean;
   };
 }
 
 // Create the main configuration object
 export const config: AppConfig = {
-  env: process.env.NODE_ENV || 'development',
-  isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production',
-  isTest: process.env.NODE_ENV === 'test',
+  env: env.NODE_ENV,
+  isDevelopment: environment.isDevelopment,
+  isProduction: environment.isProduction,
+  isTest: environment.isTest,
   server: serverConfigObj,
   auth: authConfigObj,
   database: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/plantix',
-    testUri: process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/plantix_test',
+    uri: env.MONGODB_URI,
+    testUri: env.MONGODB_TEST_URI,
+    maxPoolSize: env.DB_MAX_POOL_SIZE,
+    serverSelectionTimeout: env.DB_SERVER_SELECTION_TIMEOUT,
+    socketTimeout: env.DB_SOCKET_TIMEOUT,
+    optional: env.DATABASE_OPTIONAL,
   },
   redis: {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379', 10),
-    password: process.env.REDIS_PASSWORD,
-    keyPrefix: process.env.REDIS_KEY_PREFIX || 'plantix:',
+    host: env.REDIS_HOST,
+    port: env.REDIS_PORT,
+    password: env.REDIS_PASSWORD,
+    keyPrefix: env.REDIS_KEY_PREFIX,
   },
   email: {
-    service: process.env.EMAIL_SERVICE || 'smtp',
+    service: env.EMAIL_SERVICE,
     from: {
-      name: process.env.EMAIL_FROM_NAME || 'Plantix',
-      address: process.env.EMAIL_FROM || 'noreply@plantix.com',
+      name: env.EMAIL_FROM_NAME,
+      address: env.EMAIL_FROM,
     },
     templates: {
-      baseUrl: process.env.EMAIL_TEMPLATE_BASE_URL || 'https://app.plantix.com/templates',
+      baseUrl: env.EMAIL_TEMPLATE_BASE_URL,
+    },
+    apiKey: env.EMAIL_API_KEY,
+    smtp: {
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      user: env.SMTP_USER,
+      pass: env.SMTP_PASS,
+    },
+    mailgun: {
+      username: env.MAILGUN_USERNAME,
+      password: env.MAILGUN_PASSWORD,
     },
   },
   sms: {
-    service: process.env.SMS_SERVICE || 'twilio',
+    service: env.SMS_SERVICE,
     rateLimits: {
-      perMinute: parseInt(process.env.SMS_RATE_LIMIT_MINUTE || '5', 10),
-      perHour: parseInt(process.env.SMS_RATE_LIMIT_HOUR || '20', 10),
-      perDay: parseInt(process.env.SMS_RATE_LIMIT_DAY || '50', 10),
+      perMinute: env.SMS_RATE_LIMIT_MINUTE,
+      perHour: env.SMS_RATE_LIMIT_HOUR,
+      perDay: env.SMS_RATE_LIMIT_DAY,
+    },
+    twilio: {
+      accountSid: env.TWILIO_ACCOUNT_SID,
+      authToken: env.TWILIO_AUTH_TOKEN,
+      phoneNumber: env.TWILIO_PHONE_NUMBER,
     },
   },
   upload: {
-    storage: process.env.UPLOAD_STORAGE || 'cloudinary',
+    storage: env.UPLOAD_STORAGE,
     limits: {
-      fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760', 10), // 10MB
-      files: parseInt(process.env.MAX_FILES_PER_UPLOAD || '10', 10),
+      fileSize: env.MAX_FILE_SIZE,
+      files: env.MAX_FILES_PER_UPLOAD,
     },
     allowedMimeTypes: [
       'image/jpeg',
@@ -184,16 +250,48 @@ export const config: AppConfig = {
       'image/webp',
       'image/gif',
     ],
+    cloudinary: {
+      cloudName: env.CLOUDINARY_CLOUD_NAME,
+      apiKey: env.CLOUDINARY_API_KEY,
+      apiSecret: env.CLOUDINARY_API_SECRET,
+    },
+    aws: {
+      accessKeyId: env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+      region: env.AWS_REGION,
+      bucket: env.AWS_BUCKET,
+    },
   },
   external: {
     weatherApi: {
-      baseUrl: process.env.WEATHER_API_URL || 'https://api.openweathermap.org/data/2.5',
-      apiKey: process.env.WEATHER_API_KEY || '',
+      baseUrl: env.WEATHER_API_URL,
+      apiKey: env.WEATHER_API_KEY,
+      providers: {
+        openweather: env.OPENWEATHER_API_KEY ? { apiKey: env.OPENWEATHER_API_KEY } : undefined,
+        weatherapi: env.WEATHERAPI_KEY ? { apiKey: env.WEATHERAPI_KEY } : undefined,
+        accuweather: env.ACCUWEATHER_API_KEY ? { apiKey: env.ACCUWEATHER_API_KEY } : undefined,
+      },
+      primaryProvider: env.WEATHER_PRIMARY_PROVIDER,
+      backupProviders: env.WEATHER_BACKUP_PROVIDERS,
+      updateInterval: env.WEATHER_UPDATE_INTERVAL,
+      cacheExpiry: env.WEATHER_CACHE_EXPIRY,
     },
     mlApi: {
-      baseUrl: process.env.ML_API_URL || 'http://localhost:5000',
-      apiKey: process.env.ML_API_KEY || '',
+      baseUrl: env.ML_API_URL,
+      apiKey: env.ML_API_KEY,
     },
+    maps: {
+      apiKey: env.GOOGLE_MAPS_API_KEY,
+    },
+  },
+  logging: {
+    level: env.LOG_LEVEL,
+    filePath: env.LOG_FILE_PATH,
+    errorFilePath: env.ERROR_LOG_FILE_PATH,
+    maxFiles: env.LOG_MAX_FILES,
+    maxSize: env.LOG_MAX_SIZE,
+    enableConsole: env.ENABLE_CONSOLE_LOGGING,
+    enableFile: env.ENABLE_FILE_LOGGING,
   },
 };
 
@@ -236,32 +334,38 @@ export class ConfigurationManager {
       }
 
       // Validate email service configuration based on service type
-      if (config.email.service === 'sendgrid' && !process.env.SENDGRID_API_KEY) {
+      if (config.email.service === 'sendgrid' && !config.email.apiKey) {
         errors.push('Email: SendGrid API key is required');
       }
 
       if (config.email.service === 'smtp') {
-        if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        if (!config.email.smtp?.host || !config.email.smtp?.user || !config.email.smtp?.pass) {
           errors.push('Email: SMTP configuration is incomplete');
+        }
+      }
+
+      if (config.email.service === 'mailgun') {
+        if (!config.email.mailgun?.username || !config.email.mailgun?.password) {
+          errors.push('Email: Mailgun configuration is incomplete');
         }
       }
 
       // Validate SMS service configuration
       if (config.sms.service === 'twilio') {
-        if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+        if (!config.sms.twilio?.accountSid || !config.sms.twilio?.authToken) {
           errors.push('SMS: Twilio configuration is incomplete');
         }
       }
 
       // Validate upload service configuration
       if (config.upload.storage === 'cloudinary') {
-        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY) {
+        if (!config.upload.cloudinary?.cloudName || !config.upload.cloudinary?.apiKey) {
           errors.push('Upload: Cloudinary configuration is incomplete');
         }
       }
 
       if (config.upload.storage === 's3') {
-        if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+        if (!config.upload.aws?.accessKeyId || !config.upload.aws?.secretAccessKey) {
           errors.push('Upload: AWS S3 configuration is incomplete');
         }
       }
@@ -317,31 +421,75 @@ export class ConfigurationManager {
     const envConfigs = {
       development: {
         database: {
-          uri: 'mongodb://localhost:27017/plantix_dev',
+          uri: 'mongodb://localhost:27017/agri_farm_dev',
+          testUri: 'mongodb://localhost:27017/agri_farm_test',
+          maxPoolSize: 10,
+          serverSelectionTimeout: 5000,
+          socketTimeout: 45000,
+          optional: true,
         },
         external: {
           mlApi: {
             baseUrl: 'http://localhost:5000',
+            apiKey: '',
+          },
+          weatherApi: {
+            baseUrl: 'https://api.openweathermap.org/data/2.5',
+            apiKey: '',
+            providers: {},
+            primaryProvider: 'openweather',
+            backupProviders: ['weatherapi'],
+            updateInterval: 15,
+            cacheExpiry: 30,
+          },
+          maps: {
+            apiKey: '',
           },
         },
       },
       production: {
         database: {
-          uri: process.env.MONGODB_URI,
+          uri: config.database.uri,
+          testUri: config.database.testUri,
+          maxPoolSize: config.database.maxPoolSize,
+          serverSelectionTimeout: config.database.serverSelectionTimeout,
+          socketTimeout: config.database.socketTimeout,
+          optional: false,
         },
         external: {
           mlApi: {
-            baseUrl: process.env.ML_API_URL,
+            baseUrl: config.external.mlApi.baseUrl,
+            apiKey: config.external.mlApi.apiKey,
           },
+          weatherApi: config.external.weatherApi,
+          maps: config.external.maps,
         },
       },
       test: {
         database: {
-          uri: 'mongodb://localhost:27017/plantix_test',
+          uri: 'mongodb://localhost:27017/agri_farm_test',
+          testUri: 'mongodb://localhost:27017/agri_farm_test',
+          maxPoolSize: 5,
+          serverSelectionTimeout: 2000,
+          socketTimeout: 10000,
+          optional: true,
         },
         external: {
           mlApi: {
-            baseUrl: 'http://localhost:5001', // Different port for tests
+            baseUrl: 'http://localhost:5001',
+            apiKey: '',
+          },
+          weatherApi: {
+            baseUrl: 'https://api.openweathermap.org/data/2.5',
+            apiKey: '',
+            providers: {},
+            primaryProvider: 'openweather',
+            backupProviders: ['weatherapi'],
+            updateInterval: 15,
+            cacheExpiry: 30,
+          },
+          maps: {
+            apiKey: '',
           },
         },
       },
@@ -412,6 +560,33 @@ export class ConfigurationManager {
   }
 
   /**
+   * Log configuration summary (detailed)
+   */
+  static logConfiguration(): void {
+    const logger = require('@/utils/logger').logger;
+    logger.info('Detailed configuration loaded', {
+      environment: config.env,
+      server: {
+        port: config.server.port,
+        host: config.server.host,
+        apiVersion: config.server.apiVersion,
+      },
+      features: FEATURE_FLAGS,
+      monitoring: {
+        healthChecks: config.server.monitoring.enableHealthChecks,
+        metrics: config.server.monitoring.enableMetrics,
+        swagger: config.server.swagger.enabled,
+      },
+      services: {
+        database: config.database.optional ? 'optional' : 'required',
+        email: config.email.service,
+        sms: config.sms.service,
+        upload: config.upload.storage,
+      },
+    });
+  }
+
+  /**
    * Initialize configurations
    */
   static async initialize(): Promise<void> {
@@ -429,7 +604,7 @@ export class ConfigurationManager {
     this.logConfigurationSummary();
 
     // Initialize services that need setup
-    ConfigValidator.logConfiguration();
+    this.logConfiguration();
   }
 }
 

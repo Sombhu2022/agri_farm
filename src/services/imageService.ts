@@ -7,15 +7,16 @@ import {
   ThumbnailOptions,
   WatermarkOptions 
 } from './imageService.types';
+import { env } from '@/config/env';
 import logger from '@/utils/logger';
 import { FileUploadError, ExternalServiceError } from '@/utils/errors';
 
 export class ImageService {
   private static isCloudinaryConfigured(): boolean {
     return !!(
-      process.env.CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET
+      env.CLOUDINARY_CLOUD_NAME &&
+      env.CLOUDINARY_API_KEY &&
+      env.CLOUDINARY_API_SECRET
     );
   }
 
@@ -245,9 +246,9 @@ export class ImageService {
   }
 
   private static generateCloudinaryThumbnailUrl(publicId: string): string {
-    if (!process.env.CLOUDINARY_CLOUD_NAME) return '';
+    if (!env.CLOUDINARY_CLOUD_NAME) return '';
     
-    return `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/c_thumb,w_300,h_300,g_face/${publicId}.jpg`;
+    return `https://res.cloudinary.com/${env.CLOUDINARY_CLOUD_NAME}/image/upload/c_thumb,w_300,h_300,g_face/${publicId}.jpg`;
   }
 
   static async deleteFromCloudinary(publicId: string): Promise<boolean> {

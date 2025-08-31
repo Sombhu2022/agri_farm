@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { NextFunction } from 'express';
 import { User } from '@/models/User';
 import logger from '@/utils/logger';
+import { env } from '@/config/env';
 import { OtpService } from '@/services/otpService';
 import {
   AuthenticationError,
@@ -32,8 +33,8 @@ const otpService = new OtpService();
 
 // JWT Helper functions
 const generateTokens = (userId: string, email: string, role: string): AuthTokens => {
-  const jwtSecret = process.env.JWT_SECRET;
-  const refreshSecret = process.env.JWT_REFRESH_SECRET;
+  const jwtSecret = env.JWT_SECRET;
+  const refreshSecret = env.JWT_REFRESH_SECRET;
 
   if (!jwtSecret || !refreshSecret) {
     throw new Error('JWT secrets not configured');
@@ -146,7 +147,7 @@ const manageRefreshTokenAndSetCookies = async (
   await user.save();
   
   // Set HTTP-only cookies
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = env.NODE_ENV === 'production';
   
   // Access token cookie (always fresh)
   res.cookie('accessToken', tokens.accessToken, {
@@ -171,7 +172,7 @@ const manageRefreshTokenAndSetCookies = async (
 
 // Helper function to generate only access token
 const generateAccessToken = (userId: string, email: string, role: string): string => {
-  const jwtSecret = process.env.JWT_SECRET;
+  const jwtSecret = env.JWT_SECRET;
   if (!jwtSecret) {
     throw new Error('JWT_SECRET is not configured');
   }
@@ -528,7 +529,7 @@ export const refreshToken: RefreshTokenController = async (req, res) => {
       throw new AuthenticationError('Refresh token is required');
     }
 
-    const refreshSecret = process.env.JWT_REFRESH_SECRET;
+    const refreshSecret = env.JWT_REFRESH_SECRET;
     if (!refreshSecret) {
       throw new Error('JWT refresh secret not configured');
     }
@@ -1587,7 +1588,7 @@ export const googleAuthCallback = async (req: any, res: any): Promise<void> => {
     );
 
     // Redirect to frontend with success
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = env.FRONTEND_URL || 'http://localhost:3000';
     const redirectUrl = `${frontendUrl}/auth/callback?success=true&token=${encodeURIComponent(jwtAccessToken)}`;
     
     res.redirect(redirectUrl);
@@ -1602,7 +1603,7 @@ export const googleAuthCallback = async (req: any, res: any): Promise<void> => {
     }));
 
     // Redirect to frontend with error
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = env.FRONTEND_URL || 'http://localhost:3000';
     const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
     const redirectUrl = `${frontendUrl}/auth/callback?error=${encodeURIComponent(errorMessage)}`;
     
@@ -1621,11 +1622,11 @@ export const mobileGoogleSignIn = async (req: any, res: any): Promise<void> => {
 
     // Verify Google ID token
     const { OAuth2Client } = require('google-auth-library');
-    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
     
     const ticket = await client.verifyIdToken({
       idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: env.GOOGLE_CLIENT_ID,
     });
     
     const payload = ticket.getPayload();

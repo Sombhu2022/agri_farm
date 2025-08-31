@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import App from './app';
+import { env } from '@/config/env';
 import logger from '@/utils/logger';
 
 // Handle unhandled promise rejections and uncaught exceptions early
@@ -28,7 +29,7 @@ const startServer = async (): Promise<void> => {
       platform: process.platform,
       arch: process.arch,
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'development',
+      environment: env.NODE_ENV,
     });
 
     const app = new App();

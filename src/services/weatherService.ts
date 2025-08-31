@@ -2,6 +2,7 @@ import axios from 'axios';
 import logger from '@/utils/logger';
 import { WeatherServiceError } from '@/utils/errors';
 import { redisClient } from '@/config/redis';
+import { env } from '@/config/env';
 import type {
   WeatherData,
   WeatherForecast,
@@ -24,10 +25,10 @@ class WeatherService {
 
   constructor() {
     this.config = {
-      primaryProvider: process.env.WEATHER_PRIMARY_PROVIDER || 'openweather',
-      backupProviders: (process.env.WEATHER_BACKUP_PROVIDERS || 'weatherapi').split(','),
-      updateInterval: parseInt(process.env.WEATHER_UPDATE_INTERVAL || '15'), // minutes
-      cacheExpiry: parseInt(process.env.WEATHER_CACHE_EXPIRY || '30'), // minutes
+      primaryProvider: env.WEATHER_PRIMARY_PROVIDER,
+      backupProviders: env.WEATHER_BACKUP_PROVIDERS,
+      updateInterval: env.WEATHER_UPDATE_INTERVAL,
+      cacheExpiry: env.WEATHER_CACHE_EXPIRY,
     };
 
     this.initializeProviders();
@@ -38,33 +39,33 @@ class WeatherService {
    */
   private initializeProviders(): void {
     // OpenWeatherMap provider
-    if (process.env.OPENWEATHER_API_KEY) {
+    if (env.OPENWEATHER_API_KEY) {
       this.providers.set('openweather', {
         name: 'OpenWeatherMap',
         baseUrl: 'https://api.openweathermap.org/data/2.5',
-        apiKey: process.env.OPENWEATHER_API_KEY,
+        apiKey: env.OPENWEATHER_API_KEY,
         rateLimit: 1000, // requests per day
         isActive: true,
       });
     }
 
     // WeatherAPI provider
-    if (process.env.WEATHERAPI_KEY) {
+    if (env.WEATHERAPI_KEY) {
       this.providers.set('weatherapi', {
         name: 'WeatherAPI',
         baseUrl: 'https://api.weatherapi.com/v1',
-        apiKey: process.env.WEATHERAPI_KEY,
+        apiKey: env.WEATHERAPI_KEY,
         rateLimit: 1000000, // requests per month
         isActive: true,
       });
     }
 
     // AccuWeather provider
-    if (process.env.ACCUWEATHER_API_KEY) {
+    if (env.ACCUWEATHER_API_KEY) {
       this.providers.set('accuweather', {
         name: 'AccuWeather',
         baseUrl: 'http://dataservice.accuweather.com',
-        apiKey: process.env.ACCUWEATHER_API_KEY,
+        apiKey: env.ACCUWEATHER_API_KEY,
         rateLimit: 50, // requests per day for free tier
         isActive: true,
       });

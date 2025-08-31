@@ -1,5 +1,6 @@
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import passport from 'passport';
+import { env } from '@/config/env';
 
 interface GoogleConfig {
   clientId: string;
@@ -14,9 +15,9 @@ class SocialAuthService {
 
   constructor() {
     this.config = {
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/v1/auth/google/callback',
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      callbackURL: env.GOOGLE_CALLBACK_URL,
       scope: ['profile', 'email'],
     };
 

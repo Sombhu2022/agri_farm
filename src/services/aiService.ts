@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import * as tf from '@tensorflow/tfjs-node';
 import sharp from 'sharp';
+import { env } from '@/config/env';
 import logger from '@/utils/logger';
 import { AIServiceError } from '@/utils/errors';
 import type {
@@ -43,53 +44,53 @@ class AIService {
     // Plant.id configuration
     this.mlConfigs.set('plant_id', {
       provider: 'plant_id',
-      apiKey: process.env.PLANT_ID_API_KEY,
-      apiUrl: process.env.PLANT_ID_API_URL || 'https://api.plant.id/v3',
-      confidenceThreshold: Number(process.env.ML_CONFIDENCE_THRESHOLD) || 0.7,
-      timeout: Number(process.env.ML_TIMEOUT_SECONDS) * 1000 || 10000,
-      enabled: Boolean(process.env.PLANT_ID_API_KEY)
+      apiKey: env.PLANT_ID_API_KEY,
+      apiUrl: env.PLANT_ID_API_URL,
+      confidenceThreshold: env.ML_CONFIDENCE_THRESHOLD,
+      timeout: env.ML_TIMEOUT_SECONDS * 1000,
+      enabled: Boolean(env.PLANT_ID_API_KEY)
     });
 
     // PlantNet configuration
     this.mlConfigs.set('plantnet', {
       provider: 'plantnet',
-      apiKey: process.env.PLANTNET_API_KEY,
-      apiUrl: process.env.PLANTNET_API_URL || 'https://my-api.plantnet.org/v1',
-      confidenceThreshold: Number(process.env.ML_CONFIDENCE_THRESHOLD) || 0.7,
-      timeout: Number(process.env.ML_TIMEOUT_SECONDS) * 1000 || 10000,
-      enabled: Boolean(process.env.PLANTNET_API_KEY)
+      apiKey: env.PLANTNET_API_KEY,
+      apiUrl: env.PLANTNET_API_URL || 'https://my-api.plantnet.org/v1',
+      confidenceThreshold: env.ML_CONFIDENCE_THRESHOLD || 0.7,
+      timeout: env.ML_TIMEOUT_SECONDS * 1000 || 10000,
+      enabled: Boolean(env.PLANTNET_API_KEY)
     });
 
     // Google Vision configuration
     this.mlConfigs.set('google_vision', {
       provider: 'google_vision',
-      apiKey: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      apiKey: env.GOOGLE_APPLICATION_CREDENTIALS,
       apiUrl: 'https://vision.googleapis.com/v1',
-      confidenceThreshold: Number(process.env.ML_CONFIDENCE_THRESHOLD) || 0.7,
-      timeout: Number(process.env.ML_TIMEOUT_SECONDS) * 1000 || 10000,
-      enabled: Boolean(process.env.GOOGLE_CLOUD_PROJECT_ID)
+      confidenceThreshold: env.ML_CONFIDENCE_THRESHOLD || 0.7,
+      timeout: env.ML_TIMEOUT_SECONDS * 1000 || 10000,
+      enabled: Boolean(env.GOOGLE_CLOUD_PROJECT_ID)
     });
 
     // TensorFlow configuration
     this.mlConfigs.set('tensorflow', {
       provider: 'tensorflow',
-      modelUrl: process.env.TENSORFLOW_MODEL_URL,
-      confidenceThreshold: Number(process.env.ML_CONFIDENCE_THRESHOLD) || 0.7,
-      timeout: Number(process.env.ML_TIMEOUT_SECONDS) * 1000 || 10000,
-      enabled: Boolean(process.env.TENSORFLOW_MODEL_URL)
+      modelUrl: env.TENSORFLOW_MODEL_URL,
+      confidenceThreshold: env.ML_CONFIDENCE_THRESHOLD || 0.7,
+      timeout: env.ML_TIMEOUT_SECONDS * 1000 || 10000,
+      enabled: Boolean(env.TENSORFLOW_MODEL_URL)
     });
 
     // Hugging Face configuration
     this.mlConfigs.set('huggingface', {
       provider: 'huggingface',
-      apiKey: process.env.HF_API_TOKEN,
+      apiKey: env.HF_API_TOKEN,
       apiUrl: 'https://api-inference.huggingface.co/models',
-      confidenceThreshold: Number(process.env.ML_CONFIDENCE_THRESHOLD) || 0.7,
-      timeout: Number(process.env.ML_TIMEOUT_SECONDS) * 1000 || 10000,
-      enabled: Boolean(process.env.HF_API_TOKEN)
+      confidenceThreshold: env.ML_CONFIDENCE_THRESHOLD || 0.7,
+      timeout: env.ML_TIMEOUT_SECONDS * 1000 || 10000,
+      enabled: Boolean(env.HF_API_TOKEN)
     });
 
-    this.confidenceThreshold = Number(process.env.ML_CONFIDENCE_THRESHOLD) || 0.7;
+    this.confidenceThreshold = env.ML_CONFIDENCE_THRESHOLD || 0.7;
     
     logger.info('ML services initialized', {
       enabledProviders: Array.from(this.mlConfigs.entries())
@@ -103,7 +104,7 @@ class AIService {
    */
   private async initializeTensorFlowModel(): Promise<void> {
     try {
-      const modelUrl = process.env.TENSORFLOW_MODEL_URL;
+      const modelUrl = env.TENSORFLOW_MODEL_URL;
       if (!modelUrl) {
         logger.info('TensorFlow model URL not provided, skipping TensorFlow initialization');
         return;
@@ -196,8 +197,8 @@ class AIService {
     images: ImagePreprocessingResult[], 
     cropId?: string
   ): Promise<DiagnosisResult> {
-    const primaryProvider = process.env.ML_PRIMARY_MODEL as MLProvider || 'plant_id';
-    const fallbackProvider = process.env.ML_FALLBACK_MODEL as MLProvider || 'tensorflow';
+    const primaryProvider = env.ML_PRIMARY_MODEL as MLProvider || 'plant_id';
+    const fallbackProvider = env.ML_FALLBACK_MODEL as MLProvider || 'tensorflow';
     
     let result: MLDiagnosisResult | null = null;
     let lastError: Error | null = null;
@@ -354,7 +355,7 @@ class AIService {
     images: ImagePreprocessingResult[], 
     config: MLServiceConfig
   ): Promise<MLDiagnosisResult> {
-    const project = process.env.PLANTNET_PROJECT || 'weurope';
+    const project = env.PLANTNET_PROJECT || 'weurope';
     const request: PlantNetRequest = {
       images: images.map((_, index) => ({
         organ: 'leaf',
@@ -410,7 +411,7 @@ class AIService {
 
     const startTime = Date.now();
     const response = await this.makeAPICall<GoogleVisionResponse>(
-      `${config.apiUrl}/images:annotate?key=${process.env.GOOGLE_API_KEY}`,
+      `${config.apiUrl}/images:annotate?key=${env.GOOGLE_API_KEY}`,
       {
         method: 'POST',
         headers: {
@@ -477,7 +478,7 @@ class AIService {
     images: ImagePreprocessingResult[], 
     config: MLServiceConfig
   ): Promise<MLDiagnosisResult> {
-    const model = process.env.HF_PLANT_MODEL || 'microsoft/plant-disease-classifier';
+    const model = env.HF_PLANT_MODEL || 'microsoft/plant-disease-classifier';
     
     const startTime = Date.now();
     const allPredictions: HuggingFaceResponse[] = [];
@@ -988,13 +989,13 @@ class AIService {
     return {
       enabledProviders,
       totalProviders: enabledProviders.length,
-      primaryProvider: process.env.ML_PRIMARY_MODEL || 'plant_id',
-      fallbackProvider: process.env.ML_FALLBACK_MODEL || 'tensorflow',
-      ensembleEnabled: process.env.ML_USE_ENSEMBLE === 'true',
+      primaryProvider: env.ML_PRIMARY_MODEL || 'plant_id',
+      fallbackProvider: env.ML_FALLBACK_MODEL || 'tensorflow',
+      ensembleEnabled: env.ML_USE_ENSEMBLE === 'true',
       globalConfidenceThreshold: this.confidenceThreshold,
       tensorflowLoaded: Boolean(this.tfModel),
-      maxImageSize: process.env.ML_IMAGE_MAX_SIZE || '2048',
-      supportedFormats: (process.env.ML_SUPPORTED_FORMATS || 'jpg,jpeg,png,webp').split(',')
+      maxImageSize: env.ML_IMAGE_MAX_SIZE || '2048',
+      supportedFormats: (env.ML_SUPPORTED_FORMATS || 'jpg,jpeg,png,webp').split(',')
     };
   }
 
