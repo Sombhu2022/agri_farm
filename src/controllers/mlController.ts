@@ -127,8 +127,8 @@ export const getMLUsageStats = async (
       providersUsage: {
         plant_id: { requests: 800, success_rate: 0.95 },
         plantnet: { requests: 200, success_rate: 0.88 },
-        tensorflow: { requests: 150, success_rate: 0.92 },
-        google_vision: { requests: 100, success_rate: 0.90 }
+        google_vision: { requests: 100, success_rate: 0.90 },
+        huggingface: { requests: 150, success_rate: 0.92 }
       },
       topDiseases: [
         { disease: 'Tomato Late Blight', count: 145 },

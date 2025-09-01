@@ -45,7 +45,7 @@ export interface IDiagnosis extends Document {
   
   // AI/ML metadata
   modelVersion: string;
-  modelProvider: 'tensorflow' | 'pytorch' | 'custom';
+  modelProvider: 'api' | 'custom';
   processingMetadata?: {
     imagePreprocessing?: string[];
     algorithms?: string[];

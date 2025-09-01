@@ -1,5 +1,4 @@
 import axios, { AxiosResponse } from 'axios';
-import * as tf from '@tensorflow/tfjs-node';
 import sharp from 'sharp';
 import { env } from '@/config/env';
 import logger from '@/utils/logger';
@@ -20,21 +19,18 @@ import type {
   GoogleVisionResponse,
   HuggingFaceRequest,
   HuggingFaceResponse,
-  TensorFlowPrediction,
   ImagePreprocessingResult,
   MLServiceError
 } from '@/types/ml.types';
 
 class AIService {
   private mlConfigs: Map<MLProvider, MLServiceConfig> = new Map();
-  private tfModel: tf.LayersModel | null = null;
   private confidenceThreshold: number = 0.7;
   private maxRetries: number = 3;
   private retryDelay: number = 1000;
 
   constructor() {
     this.initializeMLConfigs();
-    this.initializeTensorFlowModel();
   }
 
   /**
@@ -71,14 +67,6 @@ class AIService {
       enabled: Boolean(env.GOOGLE_CLOUD_PROJECT_ID)
     });
 
-    // TensorFlow configuration
-    this.mlConfigs.set('tensorflow', {
-      provider: 'tensorflow',
-      modelUrl: env.TENSORFLOW_MODEL_URL,
-      confidenceThreshold: env.ML_CONFIDENCE_THRESHOLD || 0.7,
-      timeout: env.ML_TIMEOUT_SECONDS * 1000 || 10000,
-      enabled: Boolean(env.TENSORFLOW_MODEL_URL)
-    });
 
     // Hugging Face configuration
     this.mlConfigs.set('huggingface', {
@@ -99,29 +87,6 @@ class AIService {
     });
   }
 
-  /**
-   * Initialize TensorFlow model for fallback
-   */
-  private async initializeTensorFlowModel(): Promise<void> {
-    try {
-      const modelUrl = env.TENSORFLOW_MODEL_URL;
-      if (!modelUrl) {
-        logger.info('TensorFlow model URL not provided, skipping TensorFlow initialization');
-        return;
-      }
-
-      logger.info('Loading TensorFlow model', { modelUrl });
-      this.tfModel = await tf.loadLayersModel(modelUrl);
-      
-      logger.info('TensorFlow model loaded successfully', {
-        inputShape: this.tfModel.inputs[0].shape,
-        outputShape: this.tfModel.outputs[0].shape,
-      });
-    } catch (error) {
-      logger.error('Failed to load TensorFlow model', { error });
-      // Continue without TensorFlow model
-    }
-  }
 
   /**
    * Preprocess image for ML analysis
@@ -198,7 +163,7 @@ class AIService {
     cropId?: string
   ): Promise<DiagnosisResult> {
     const primaryProvider = env.ML_PRIMARY_MODEL as MLProvider || 'plant_id';
-    const fallbackProvider = env.ML_FALLBACK_MODEL as MLProvider || 'tensorflow';
+    const fallbackProvider = env.ML_FALLBACK_MODEL as MLProvider || 'plant_id';
     
     let result: MLDiagnosisResult | null = null;
     let lastError: Error | null = null;
@@ -295,8 +260,6 @@ class AIService {
           return await this.callPlantNetAPI(images, config);
         case 'google_vision':
           return await this.callGoogleVisionAPI(images, config);
-        case 'tensorflow':
-          return await this.callTensorFlowModel(images, config);
         case 'huggingface':
           return await this.callHuggingFaceAPI(images, config);
         default:
@@ -426,50 +389,6 @@ class AIService {
     return this.parseGoogleVisionResponse(response.data, processingTime, images.length);
   }
 
-  /**
-   * Call TensorFlow model for plant disease detection
-   */
-  private async callTensorFlowModel(
-    images: ImagePreprocessingResult[], 
-    config: MLServiceConfig
-  ): Promise<MLDiagnosisResult> {
-    if (!this.tfModel) {
-      throw new Error('TensorFlow model not loaded');
-    }
-
-    const startTime = Date.now();
-    const predictions: TensorFlowPrediction[] = [];
-
-    for (const image of images) {
-      // Convert image to tensor
-      const imageTensor = tf.node.decodeImage(image.buffer, 3)
-        .resizeNearestNeighbor([224, 224])
-        .expandDims(0)
-        .div(255.0);
-
-      const prediction = this.tfModel.predict(imageTensor) as tf.Tensor;
-      const predictionData = await prediction.data();
-      
-      // Get top predictions (assuming we have class labels)
-      const diseaseClasses = this.getTensorFlowDiseaseClasses();
-      const topPredictions = Array.from(predictionData)
-        .map((confidence, index) => ({
-          className: diseaseClasses[index] || `Disease_${index}`,
-          probability: confidence
-        }))
-        .sort((a, b) => (b.probability as number) - (a.probability as number))
-        .slice(0, 5);
-
-      predictions.push(...topPredictions.map(p => ({ className: p.className, probability: p.probability as number })));
-      
-      // Clean up tensors
-      imageTensor.dispose();
-      prediction.dispose();
-    }
-
-    const processingTime = Date.now() - startTime;
-    return this.parseTensorFlowResponse(predictions, processingTime, images.length);
-  }
 
   /**
    * Call Hugging Face API for plant disease detection
@@ -706,52 +625,6 @@ class AIService {
     }
   }
 
-  /**
-   * Get TensorFlow disease classes
-   */
-  private getTensorFlowDiseaseClasses(): string[] {
-    // PlantVillage dataset classes
-    return [
-      'Apple___Apple_scab',
-      'Apple___Black_rot',
-      'Apple___Cedar_apple_rust',
-      'Apple___healthy',
-      'Blueberry___healthy',
-      'Cherry_(including_sour)___Powdery_mildew',
-      'Cherry_(including_sour)___healthy',
-      'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot',
-      'Corn_(maize)___Common_rust_',
-      'Corn_(maize)___Northern_Leaf_Blight',
-      'Corn_(maize)___healthy',
-      'Grape___Black_rot',
-      'Grape___Esca_(Black_Measles)',
-      'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
-      'Grape___healthy',
-      'Orange___Haunglongbing_(Citrus_greening)',
-      'Peach___Bacterial_spot',
-      'Peach___healthy',
-      'Pepper,_bell___Bacterial_spot',
-      'Pepper,_bell___healthy',
-      'Potato___Early_blight',
-      'Potato___Late_blight',
-      'Potato___healthy',
-      'Raspberry___healthy',
-      'Soybean___healthy',
-      'Squash___Powdery_mildew',
-      'Strawberry___Leaf_scorch',
-      'Strawberry___healthy',
-      'Tomato___Bacterial_spot',
-      'Tomato___Early_blight',
-      'Tomato___Late_blight',
-      'Tomato___Leaf_Mold',
-      'Tomato___Septoria_leaf_spot',
-      'Tomato___Spider_mites Two-spotted_spider_mite',
-      'Tomato___Target_Spot',
-      'Tomato___Yellow_Leaf_Curl_Virus',
-      'Tomato___mosaic_virus',
-      'Tomato___healthy'
-    ];
-  }
 
   /**
    * Parse Plant.id API response
@@ -890,40 +763,6 @@ class AIService {
     };
   }
 
-  /**
-   * Parse TensorFlow model response
-   */
-  private parseTensorFlowResponse(
-    predictions: TensorFlowPrediction[], 
-    processingTime: number, 
-    imageCount: number
-  ): MLDiagnosisResult {
-    const mlPredictions = predictions.slice(0, 5).map(pred => {
-      const parts = pred.className.split('___');
-      const crop = parts[0];
-      const disease = parts[1] || 'unknown';
-      
-      return {
-        diseaseId: pred.className.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-        diseaseName: disease === 'healthy' ? `Healthy ${crop}` : disease.replace(/_/g, ' '),
-        confidence: pred.probability,
-        description: `${crop}: ${disease}`,
-        severity: (pred.probability > 0.8 ? 'high' : pred.probability > 0.6 ? 'medium' : 'low') as const
-      };
-    });
-
-    return {
-      provider: 'tensorflow',
-      confidence: mlPredictions[0]?.confidence || 0,
-      predictions: mlPredictions,
-      isHealthy: predictions[0]?.className.includes('healthy') || false,
-      metadata: {
-        processingTime,
-        imageCount,
-        modelVersion: 'PlantVillage-v1'
-      }
-    };
-  }
 
   /**
    * Parse Hugging Face API response
@@ -990,10 +829,9 @@ class AIService {
       enabledProviders,
       totalProviders: enabledProviders.length,
       primaryProvider: env.ML_PRIMARY_MODEL || 'plant_id',
-      fallbackProvider: env.ML_FALLBACK_MODEL || 'tensorflow',
+      fallbackProvider: env.ML_FALLBACK_MODEL || 'plant_id',
       ensembleEnabled: env.ML_USE_ENSEMBLE === 'true',
       globalConfidenceThreshold: this.confidenceThreshold,
-      tensorflowLoaded: Boolean(this.tfModel),
       maxImageSize: env.ML_IMAGE_MAX_SIZE || '2048',
       supportedFormats: (env.ML_SUPPORTED_FORMATS || 'jpg,jpeg,png,webp').split(',')
     };
@@ -1059,9 +897,6 @@ class AIService {
             // PlantNet doesn't have a health endpoint, just check if API key exists
             if (!config.apiKey) throw new Error('No API key');
             break;
-          case 'tensorflow':
-            if (!this.tfModel) throw new Error('Model not loaded');
-            break;
           case 'google_vision':
           case 'huggingface':
             if (!config.apiKey) throw new Error('No API key');
@@ -1089,11 +924,6 @@ class AIService {
    * Cleanup resources
    */
   dispose(): void {
-    if (this.tfModel) {
-      this.tfModel.dispose();
-      this.tfModel = null;
-      logger.info('TensorFlow model disposed');
-    }
     
     this.mlConfigs.clear();
     logger.info('ML service disposed');

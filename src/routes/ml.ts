@@ -101,7 +101,7 @@ router.get('/health', authenticate, checkMLProvidersHealth);
  *         required: true
  *         schema:
  *           type: string
- *           enum: [plant_id, plantnet, tensorflow, google_vision, huggingface]
+ *           enum: [plant_id, plantnet, google_vision, huggingface]
  *         description: ML provider to test
  *     requestBody:
  *       required: true
@@ -133,7 +133,7 @@ router.get('/health', authenticate, checkMLProvidersHealth);
  */
 router.post('/test/:provider',
   authenticate,
-  param('provider').isIn(['plant_id', 'plantnet', 'tensorflow', 'google_vision', 'huggingface']),
+  param('provider').isIn(['plant_id', 'plantnet', 'google_vision', 'huggingface']),
   validateRequest,
   uploadMiddleware.array('images', 3),
   testMLService
@@ -153,7 +153,7 @@ router.post('/test/:provider',
  *         required: true
  *         schema:
  *           type: string
- *           enum: [plant_id, plantnet, tensorflow, google_vision, huggingface, ensemble]
+ *           enum: [plant_id, plantnet, google_vision, huggingface, ensemble]
  *         description: ML provider to use for diagnosis
  *     requestBody:
  *       required: true
@@ -197,7 +197,7 @@ router.post('/test/:provider',
  */
 router.post('/diagnose/:provider',
   authenticate,
-  param('provider').isIn(['plant_id', 'plantnet', 'tensorflow', 'google_vision', 'huggingface', 'ensemble']),
+  param('provider').isIn(['plant_id', 'plantnet', 'google_vision', 'huggingface', 'ensemble']),
   validateRequest,
   uploadMiddleware.array('images', 5),
   diagnoseWithProvider

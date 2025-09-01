@@ -106,7 +106,7 @@ export const env = {
   ML_CONFIDENCE_THRESHOLD: parseFloat(process.env.ML_CONFIDENCE_THRESHOLD || '0.7'),
   ML_TIMEOUT_SECONDS: parseInt(process.env.ML_TIMEOUT_SECONDS || '10', 10),
   ML_PRIMARY_MODEL: process.env.ML_PRIMARY_MODEL || 'plant_id',
-  ML_FALLBACK_MODEL: process.env.ML_FALLBACK_MODEL || 'tensorflow',
+  ML_FALLBACK_MODEL: process.env.ML_FALLBACK_MODEL || 'plant_id',
   ML_USE_ENSEMBLE: process.env.ML_USE_ENSEMBLE === 'true',
   ML_IMAGE_MAX_SIZE: process.env.ML_IMAGE_MAX_SIZE || '2048',
   ML_SUPPORTED_FORMATS: process.env.ML_SUPPORTED_FORMATS || 'jpg,jpeg,png,webp',
@@ -125,8 +125,6 @@ export const env = {
   GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID || '',
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
   
-  // TensorFlow
-  TENSORFLOW_MODEL_URL: process.env.TENSORFLOW_MODEL_URL || '',
   
   // Hugging Face
   HF_API_TOKEN: process.env.HF_API_TOKEN || '',
@@ -140,14 +138,6 @@ export const env = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
   GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL || '/api/v1/auth/google/callback',
   
-  // Plant.ID API configuration
-  PLANT_ID_API_KEY: process.env.PLANT_ID_API_KEY || '',
-  PLANT_ID_API_URL: process.env.PLANT_ID_API_URL || 'https://api.plant.id/v3',
-  
-  // PlantNet API configuration
-  PLANTNET_API_KEY: process.env.PLANTNET_API_KEY || '',
-  PLANTNET_API_URL: process.env.PLANTNET_API_URL || 'https://my-api.plantnet.org/v1',
-  PLANTNET_PROJECT: process.env.PLANTNET_PROJECT || 'all',
   
   // Frontend URL
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',

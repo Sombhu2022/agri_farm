@@ -1,4 +1,4 @@
-export type MLProvider = 'plant_id' | 'plantnet' | 'tensorflow' | 'google_vision' | 'huggingface';
+export type MLProvider = 'plant_id' | 'plantnet' | 'google_vision' | 'huggingface';
 
 export interface MLServiceConfig {
   provider: MLProvider;
@@ -238,10 +238,6 @@ export interface HuggingFaceResponse {
   score: number;
 }
 
-export interface TensorFlowPrediction {
-  className: string;
-  probability: number;
-}
 
 export interface MLDiagnosisResult {
   provider: MLProvider;

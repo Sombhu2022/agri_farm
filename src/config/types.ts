@@ -96,7 +96,7 @@ export interface WeatherServiceConfig {
 }
 
 export interface MLServiceConfig {
-  provider: 'tensorflow' | 'pytorch' | 'custom';
+  provider: 'api' | 'custom';
   endpoint: string;
   apiKey?: string;
   timeout: number;
